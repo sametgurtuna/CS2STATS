@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { Search, Loader2, AlertTriangle, Link as LinkIcon, Crosshair, Zap, Target, Swords, TrendingUp, Crown, Sparkles } from "lucide-react";
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts";
+import type { PlayerData, SteamPlayerSummary, Badge, FaceitInfo, WeaponStat, MapStat, Skin } from "@/lib/types";
 
 function Ring({ value, label, color, size = 110 }: { value: number | string; label: string; color: string; size?: number }) {
   const r = (size - 16) / 2;
@@ -52,7 +53,7 @@ function StatBox({ icon, value, label, sub, color }: { icon: React.ReactNode; va
   );
 }
 
-function PlayerInfo({ p, hours, color, tag, badges, faceit }: { p: any; hours: number; color: string; tag: string; badges?: any[]; faceit?: any }) {
+function PlayerInfo({ p, hours, color, tag, badges, faceit }: { p: SteamPlayerSummary; hours: number; color: string; tag: string; badges?: Badge[]; faceit?: FaceitInfo | null }) {
   const states = ["Offline", "Online", "Busy", "Away", "Snooze", "Trade", "Play"];
   const dots = ["bg-t3", "bg-green", "bg-red", "bg-player1", "bg-yellow-700", "bg-player2", "bg-blue"];
   return (
@@ -135,8 +136,8 @@ function CmpRow({ label, v1, v2, higherIsBetter = true }: { label: string; v1: n
   );
 }
 
-function Dashboard({ d1, d2 }: { d1: any; d2: any }) {
-  const s1 = d1.stats, s2 = d2.stats;
+function Dashboard({ d1, d2 }: { d1: PlayerData; d2: PlayerData }) {
+  const s1 = d1.stats!, s2 = d2.stats!;
   const p1Col = "#FF7B00", p2Col = "#00F0FF";
   const W_COLORS_P1 = ["#FF7B00", "#FFA940", "#FFC680", "#FFDFBE", "#FFF2E5"];
   const W_COLORS_P2 = ["#00F0FF", "#40F5FF", "#80FAFF", "#BFFCFF", "#E5FEFF"];
@@ -158,7 +159,7 @@ function Dashboard({ d1, d2 }: { d1: any; d2: any }) {
   if (s1.dpr > s2.dpr) w1++; else if (s2.dpr > s1.dpr) w2++;
   const winner = w1 > w2 ? d1.player.name : w2 > w1 ? d2.player.name : "Draw";
 
-  const PieSection = ({ weapons, colors }: { weapons: any[]; colors: string[] }) => (
+  const PieSection = ({ weapons, colors }: { weapons: WeaponStat[]; colors: string[] }) => (
     <div className="h-44 w-full relative drop-shadow-2xl">
       <ResponsiveContainer>
         <PieChart>
@@ -312,7 +313,7 @@ function Dashboard({ d1, d2 }: { d1: any; d2: any }) {
                <div>
                   <PieSection weapons={s1.weapons} colors={W_COLORS_P1} />
                   <div className="mt-6 space-y-3">
-                     {s1.weapons.slice(0, 4).map((w: any, idx: number) => (
+                     {s1.weapons.slice(0, 4).map((w: WeaponStat, idx: number) => (
                         <div key={`p1-${w.name}`} className="flex justify-between items-center text-sm group bg-black/20 px-4 py-2.5 rounded-xl border border-white/5 hover:bg-white/5 transition-colors">
                            <div className="flex items-center gap-3">
                               <span className="w-3 h-3 rounded-full shadow-[0_0_8px_currentColor]" style={{ backgroundColor: W_COLORS_P1[idx % W_COLORS_P1.length], color: W_COLORS_P1[idx % W_COLORS_P1.length] }}></span>
@@ -326,7 +327,7 @@ function Dashboard({ d1, d2 }: { d1: any; d2: any }) {
                <div>
                   <PieSection weapons={s2.weapons} colors={W_COLORS_P2} />
                   <div className="mt-6 space-y-3">
-                     {s2.weapons.slice(0, 4).map((w: any, idx: number) => (
+                     {s2.weapons.slice(0, 4).map((w: WeaponStat, idx: number) => (
                         <div key={`p2-${w.name}`} className="flex justify-between items-center text-sm group bg-black/20 px-4 py-2.5 rounded-xl border border-white/5 hover:bg-white/5 transition-colors">
                            <div className="flex items-center gap-3">
                               <span className="w-3 h-3 rounded-full shadow-[0_0_8px_currentColor]" style={{ backgroundColor: W_COLORS_P2[idx % W_COLORS_P2.length], color: W_COLORS_P2[idx % W_COLORS_P2.length] }}></span>
@@ -347,10 +348,10 @@ function Dashboard({ d1, d2 }: { d1: any; d2: any }) {
             </div>
             <div className="space-y-6">
                {(() => {
-                  const allMaps = new Set([...s1.maps.map((m: any) => m.name), ...s2.maps.map((m: any) => m.name)]);
+                  const allMaps = new Set([...s1.maps.map((m: MapStat) => m.name), ...s2.maps.map((m: MapStat) => m.name)]);
                   return Array.from(allMaps).slice(0, 6).map(name => {
-                    const m1 = s1.maps.find((m: any) => m.name === name);
-                    const m2 = s2.maps.find((m: any) => m.name === name);
+                    const m1 = s1.maps.find((m: MapStat) => m.name === name);
+                    const m2 = s2.maps.find((m: MapStat) => m.name === name);
                     const w1 = m1?.wr || 0;
                     const w2 = m2?.wr || 0;
                     return (
@@ -383,7 +384,7 @@ function Dashboard({ d1, d2 }: { d1: any; d2: any }) {
               Notable Skins <span className="text-t3 ml-2 text-[10px] bg-black/40 px-2 py-1 rounded border border-white/5">{d1.player.name}</span>
             </h3>
             <div className="flex gap-4 overflow-x-auto pb-4 custom-scrollbar">
-              {d1.skins?.length > 0 ? d1.skins.map((s:any, i:number) => (
+              {d1.skins?.length > 0 ? d1.skins.map((s: Skin, i: number) => (
                  <div key={i} className="flex-shrink-0 w-[140px] bg-black/40 border border-white/5 rounded-xl p-4 flex flex-col items-center shadow-inner relative overflow-hidden group hover:border-white/20 transition-all cursor-crosshair">
                     <div className="absolute top-0 left-0 right-0 h-1 transition-all" style={{backgroundColor: `#${s.color}`, boxShadow: `0 0 10px #${s.color}80`}}></div>
                     <img src={s.image} alt={s.name} className="w-24 h-24 object-contain drop-shadow-xl group-hover:scale-110 group-hover:-translate-y-2 transition-transform duration-500" />
@@ -400,7 +401,7 @@ function Dashboard({ d1, d2 }: { d1: any; d2: any }) {
               Notable Skins <span className="text-t3 ml-2 text-[10px] bg-black/40 px-2 py-1 rounded border border-white/5">{d2.player.name}</span>
             </h3>
             <div className="flex gap-4 overflow-x-auto pb-4 custom-scrollbar">
-              {d2.skins?.length > 0 ? d2.skins.map((s:any, i:number) => (
+              {d2.skins?.length > 0 ? d2.skins.map((s: Skin, i: number) => (
                  <div key={i} className="flex-shrink-0 w-[140px] bg-black/40 border border-white/5 rounded-xl p-4 flex flex-col items-center shadow-inner relative overflow-hidden group hover:border-white/20 transition-all cursor-crosshair">
                     <div className="absolute top-0 left-0 right-0 h-1 transition-all" style={{backgroundColor: `#${s.color}`, boxShadow: `0 0 10px #${s.color}80`}}></div>
                     <img src={s.image} alt={s.name} className="w-24 h-24 object-contain drop-shadow-xl group-hover:scale-110 group-hover:-translate-y-2 transition-transform duration-500" />
@@ -419,8 +420,8 @@ function Main() {
   const sp = useSearchParams();
   const [p1, setP1] = useState(sp.get("player1") || "");
   const [p2, setP2] = useState(sp.get("player2") || "");
-  const [d1, setD1] = useState<any>(null);
-  const [d2, setD2] = useState<any>(null);
+  const [d1, setD1] = useState<PlayerData | null>(null);
+  const [d2, setD2] = useState<PlayerData | null>(null);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
   const [copied, setCopied] = useState(false);
@@ -442,7 +443,7 @@ function Main() {
     try {
       const [r1, r2] = await Promise.all([fetch1(x), fetch1(y)]);
       setD1(r1); setD2(r2);
-    } catch (e: any) { setErr(e.message); }
+    } catch (e) { setErr(e instanceof Error ? e.message : String(e)); }
     setLoading(false);
   };
 

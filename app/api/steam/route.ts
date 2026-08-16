@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import axios from 'axios';
 import https from 'https';
+import type { Badge, PlayerData } from '@/lib/types';
 
 const WEAPON_STATS = [
   { key: 'total_kills_ak47', name: 'AK-47' }, { key: 'total_kills_m4a1', name: 'M4A4/M4A1-S' },
@@ -114,7 +115,7 @@ export async function POST(request: Request) {
     }
 
     if (statR.status !== 200 || !statR.data) {
-      const respData = { player: { steamId: p.steamid, name: p.personaname, avatar: p.avatarfull, country: p.loccountrycode || "XX", state: p.personastate ?? 0, game: p.gameextrainfo }, hours, skins: topSkins, faceit: faceitInfo, badges: [], stats: null, error: "Private profile." };
+      const respData: PlayerData = { player: { steamId: p.steamid, name: p.personaname, avatar: p.avatarfull, country: p.loccountrycode || "XX", state: p.personastate ?? 0, game: p.gameextrainfo }, hours, skins: topSkins, faceit: faceitInfo, badges: [], stats: null, error: "Private profile." };
       cache.set(cacheKey, { time: Date.now(), data: respData });
       return NextResponse.json(respData);
     }
@@ -136,7 +137,7 @@ export async function POST(request: Request) {
     const dpr = r > 0 && dmg > 0 ? +(dmg / r).toFixed(1) : 0;
     const awpR = k > 0 ? +((awpK / k) * 100).toFixed(1) : 0;
 
-    let badges = [];
+    const badges: Badge[] = [];
     if (hsPct >= 50) badges.push({ id: "headshot", label: "Headshot Machine", color: "text-red-400 bg-red-400/10 border-red-400/20" });
     if (acc < 15 && k > 100) badges.push({ id: "spray", label: "Spray & Pray", color: "text-orange-400 bg-orange-400/10 border-orange-400/20" });
     if (kd >= 1.3) badges.push({ id: "carry", label: "Hard Carry", color: "text-amber-300 bg-amber-300/10 border-amber-300/20" });
@@ -151,7 +152,7 @@ export async function POST(request: Request) {
       return { name: m.name, wins: mw, rounds: mr, wr: mr > 0 ? +((mw / mr) * 100).toFixed(1) : 0 };
     }).filter(m => m.rounds > 0).sort((a, b) => b.rounds - a.rounds);
 
-    const finalResponse = {
+    const finalResponse: PlayerData = {
       player: { steamId: p.steamid, name: p.personaname, avatar: p.avatarfull, country: p.loccountrycode || "XX", state: p.personastate ?? 0, game: p.gameextrainfo },
       hours,
       skins: topSkins,
