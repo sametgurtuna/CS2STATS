@@ -8,7 +8,8 @@ export type Locale = "en" | "tr";
 
 export const messages: Record<Locale, Record<string, string>> = {
   en: {
-    "hero.subtitle": "The ultimate head-to-head Counter-Strike 2 player comparison. Enter Steam IDs or Custom URLs to analyze performance.",
+    "hero.subtitle": "Real-time Counter-Strike 2 stats, side by side. Compare up to 4 players and share the result with one link — no sign-up, no waiting.",
+    "featured.title": "Featured Comparisons",
     "search.placeholder": "Player {n} Steam ID or URL",
     "search.addPlayer": "Add Player",
     "search.removePlayer": "Remove player {n}",
@@ -47,9 +48,18 @@ export const messages: Record<Locale, Record<string, string>> = {
     "clutch.acc": "Acc",
     "skins.empty": "Private / Empty Inventory",
     "lang.toggle": "Switch language",
+    "support.button": "Support",
+    "pro.badge": "Pro plan",
+    "pro.title": "CS2STATS Pro",
+    "pro.feature1": "Full performance history (beyond 7 days)",
+    "pro.feature2": "Track unlimited players",
+    "pro.feature3": "Priority refresh, no rate limits",
+    "pro.comingSoon": "Coming soon — support development to help it happen sooner.",
+    "trend.upsell": "Showing the last 7 days. Full history is a planned Pro feature.",
   },
   tr: {
-    "hero.subtitle": "Nihai Counter-Strike 2 oyuncu karşılaştırma aracı. Performansı analiz etmek için Steam ID veya profil linki gir.",
+    "hero.subtitle": "Gerçek zamanlı Counter-Strike 2 istatistikleri, yan yana. 4 oyuncuya kadar karşılaştır, sonucu tek linkle paylaş — üyelik yok, bekleme yok.",
+    "featured.title": "Öne Çıkan Karşılaştırmalar",
     "search.placeholder": "{n}. Oyuncu Steam ID veya URL",
     "search.addPlayer": "Oyuncu Ekle",
     "search.removePlayer": "{n}. oyuncuyu kaldır",
@@ -88,5 +98,13 @@ export const messages: Record<Locale, Record<string, string>> = {
     "clutch.acc": "İsabet",
     "skins.empty": "Gizli / Boş Envanter",
     "lang.toggle": "Dili değiştir",
+    "support.button": "Destek Ol",
+    "pro.badge": "Pro plan",
+    "pro.title": "CS2STATS Pro",
+    "pro.feature1": "Tam performans geçmişi (7 günden fazlası)",
+    "pro.feature2": "Sınırsız oyuncu takibi",
+    "pro.feature3": "Öncelikli yenileme, rate limit yok",
+    "pro.comingSoon": "Yakında geliyor — gelişimi hızlandırmak için destek olabilirsin.",
+    "trend.upsell": "Son 7 gün gösteriliyor. Tam geçmiş, planlanan bir Pro özelliği.",
   },
 };

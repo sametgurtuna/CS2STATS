@@ -11,6 +11,11 @@ import PlayerView from "./PlayerView";
 
 const CACHE_TTL_SECONDS = 300;
 
+// Faz 5: free tier shows the last 7 daily snapshots; full history is a
+// planned Pro feature (see app/components/ProBadge.tsx — no real
+// entitlement check exists yet, this is just what's currently shown).
+const FREE_TIER_SNAPSHOT_DAYS = 7;
+
 type Params = Promise<{ steamid: string }>;
 
 async function loadPlayer(steamid: string): Promise<{ resolvedId: string; data: PlayerData } | null> {
@@ -61,7 +66,9 @@ export default async function PlayerPage({ params }: { params: Params }) {
     await trackPlayerView(resolvedId, data.player.name, data.player.avatar, data.player.country);
   });
 
-  const snapshots = await getSnapshots(resolvedId);
+  const allSnapshots = await getSnapshots(resolvedId);
+  const snapshots = allSnapshots.slice(-FREE_TIER_SNAPSHOT_DAYS);
+  const hasMoreHistory = allSnapshots.length > FREE_TIER_SNAPSHOT_DAYS;
 
-  return <PlayerView data={data} snapshots={snapshots} />;
+  return <PlayerView data={data} snapshots={snapshots} hasMoreHistory={hasMoreHistory} />;
 }

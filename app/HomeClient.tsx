@@ -12,6 +12,9 @@ import { useI18n } from "@/lib/i18n/context";
 import { Dashboard } from "./components/Dashboard";
 import { SearchForm } from "./components/SearchForm";
 import { RecentSearchesList } from "./components/RecentSearchesList";
+import { FeaturedComparisons } from "./components/FeaturedComparisons";
+import { SupportButton } from "./components/SupportButton";
+import { ProBadge } from "./components/ProBadge";
 
 async function fetchPlayer(input: string): Promise<PlayerData> {
   const r = await fetch("/api/steam", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ player: input }) });
@@ -150,6 +153,8 @@ function Main() {
               </div>
             </h1>
             <div className="flex items-center gap-3">
+              <ProBadge />
+              <SupportButton />
               <button
                 onClick={() => setLocale(locale === "en" ? "tr" : "en")}
                 aria-label={t("lang.toggle")}
@@ -188,7 +193,9 @@ function Main() {
         <div className={`transition-all duration-1000 ease-out ${isCentered ? "max-w-4xl mx-auto mt-[15vh] scale-100" : "max-w-[1280px] scale-100 mb-12"}`}>
           {isCentered && (
             <div className="text-center mb-16 fade-in flex flex-col items-center">
-              <div className="absolute top-6 right-6 sm:top-8 sm:right-8">
+              <div className="absolute top-6 right-6 sm:top-8 sm:right-8 flex items-center gap-3">
+                <ProBadge />
+                <SupportButton />
                 <button
                   onClick={() => setLocale(locale === "en" ? "tr" : "en")}
                   aria-label={t("lang.toggle")}
@@ -217,6 +224,7 @@ function Main() {
             loading={loading}
             centered={isCentered}
           />
+          {isCentered && <FeaturedComparisons onSelect={(players) => setInputs(players.length >= MIN_PLAYERS ? players : [...players, ""])} />}
           {isCentered && <RecentSearchesList onSelect={(players) => setInputs(players.length >= MIN_PLAYERS ? players : [...players, ""])} />}
         </div>
 
