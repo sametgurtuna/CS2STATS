@@ -64,6 +64,28 @@ body {
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Faz 3: respect the user's reduced-motion preference — kills the fade-in/
+   grow-bar/shimmer keyframes and any transition duration, without hiding
+   content (fade-in already sets opacity:0 pre-animation, so it must resolve
+   to opacity:1 here instead of just removing the animation). */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .fade-in {
+    opacity: 1;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-player1);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;

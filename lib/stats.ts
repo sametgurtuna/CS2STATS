@@ -93,6 +93,42 @@ export function computeBadges(stats: { hsPct: number; acc: number; kills: number
   return badges.slice(0, 3);
 }
 
+export interface WinProbabilityInput {
+  kd: number;
+  hsPct: number;
+  winR: number;
+  acc: number;
+  mvpM: number;
+  dpr: number;
+}
+
+const WIN_PROB_WEIGHTS: Record<keyof WinProbabilityInput, number> = {
+  kd: 0.25,
+  winR: 0.25,
+  hsPct: 0.15,
+  acc: 0.15,
+  mvpM: 0.1,
+  dpr: 0.1,
+};
+
+/**
+ * Weighted composite score across N players (replaces the old equal-weighted
+ * "who wins more categories" tally). Each stat is normalized against the best
+ * player in the group before weighting, so the result is comparable across
+ * very different stat scales (e.g. dpr ~80 vs acc ~20). Output is normalized
+ * to sum to 100 across all players — read it as a rough "win probability" %.
+ */
+export function computeWinProbability(players: WinProbabilityInput[]): number[] {
+  if (players.length === 0) return [];
+  const keys = Object.keys(WIN_PROB_WEIGHTS) as (keyof WinProbabilityInput)[];
+  const maxes: Record<string, number> = {};
+  for (const k of keys) maxes[k] = Math.max(...players.map((p) => p[k]), 0.0001);
+
+  const raw = players.map((p) => keys.reduce((sum, k) => sum + (p[k] / maxes[k]) * WIN_PROB_WEIGHTS[k], 0));
+  const total = raw.reduce((a, b) => a + b, 0) || 1;
+  return raw.map((r) => +((r / total) * 100).toFixed(1));
+}
+
 /** Orchestrates every derived stat from Steam's raw stat list. */
 export function computePlayerStats(list: RawStatEntry[]): PlayerStats {
   const v = makeStatLookup(list);

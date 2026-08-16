@@ -9,6 +9,7 @@ import {
   calcWinRate,
   computeBadges,
   computePlayerStats,
+  computeWinProbability,
   deriveMaps,
   deriveWeapons,
   makeStatLookup,
@@ -150,5 +151,37 @@ describe("computePlayerStats", () => {
     expect(stats.dpr).toBeCloseTo(83.3, 1);
     expect(stats.awpR).toBe(10);
     expect(stats.played).toBe(100);
+  });
+});
+
+describe("computeWinProbability", () => {
+  it("returns [] for an empty player list", () => {
+    expect(computeWinProbability([])).toEqual([]);
+  });
+
+  it("gives an all-around-better player the higher score", () => {
+    const better = { kd: 1.5, hsPct: 50, winR: 60, acc: 25, mvpM: 1.5, dpr: 90 };
+    const worse = { kd: 0.8, hsPct: 30, winR: 40, acc: 15, mvpM: 0.5, dpr: 60 };
+    const [a, b] = computeWinProbability([better, worse]);
+    expect(a).toBeGreaterThan(b);
+  });
+
+  it("splits evenly for two identical players", () => {
+    const same = { kd: 1, hsPct: 40, winR: 50, acc: 20, mvpM: 1, dpr: 80 };
+    const [a, b] = computeWinProbability([same, same]);
+    expect(a).toBeCloseTo(50, 5);
+    expect(b).toBeCloseTo(50, 5);
+  });
+
+  it("normalizes to sum to 100 across N players", () => {
+    const players = [
+      { kd: 1.2, hsPct: 45, winR: 55, acc: 22, mvpM: 1.1, dpr: 85 },
+      { kd: 0.9, hsPct: 35, winR: 45, acc: 18, mvpM: 0.8, dpr: 70 },
+      { kd: 1.5, hsPct: 50, winR: 60, acc: 25, mvpM: 1.4, dpr: 95 },
+    ];
+    // Each score is independently rounded to 1 decimal, so the sum can drift
+    // by a few tenths — assert it's close, not exact.
+    const scores = computeWinProbability(players);
+    expect(scores.reduce((a, b) => a + b, 0)).toBeCloseTo(100, 0);
   });
 });
