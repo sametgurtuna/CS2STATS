@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "health-check": "tsx scripts/health-check.ts",
+    "health-check": "tsx --env-file=.env.local scripts/health-check.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate"
   },
