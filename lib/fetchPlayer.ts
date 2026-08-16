@@ -94,6 +94,7 @@ export async function fetchPlayerData(steamId: string): Promise<PlayerData> {
   let faceitInfo = null;
   if (faceitR && faceitR.status === 200 && faceitR.data) {
     faceitInfo = {
+      playerId: faceitR.data.player_id as string | undefined,
       level: faceitR.data.games?.cs2?.skill_level || faceitR.data.games?.csgo?.skill_level || 1,
       elo: faceitR.data.games?.cs2?.faceit_elo || faceitR.data.games?.csgo?.faceit_elo || null,
       url: faceitR.data.faceit_url?.replace("{lang}", "en"),

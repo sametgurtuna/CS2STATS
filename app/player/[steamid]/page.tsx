@@ -6,10 +6,14 @@ import { fetchPlayerData, PlayerNotFoundError } from "@/lib/fetchPlayer";
 import { getCached, setCached } from "@/lib/cache";
 import { getSnapshots } from "@/lib/snapshots";
 import { trackPlayerView } from "@/lib/tracking";
+import { fetchFaceitStats, fetchFaceitMatchHistory, type FaceitLifetimeStats, type FaceitMatchSummary } from "@/lib/faceit";
 import type { PlayerData } from "@/lib/types";
 import PlayerView from "./PlayerView";
 
 const CACHE_TTL_SECONDS = 300;
+// FACEIT stats/history change slower than a live comparison — cache longer,
+// and independently from the Steam-side PlayerData cache above.
+const FACEIT_CACHE_TTL_SECONDS = 600;
 
 // Faz 5: free tier shows the last 7 daily snapshots; full history is a
 // planned Pro feature (see app/components/ProBadge.tsx — no real
@@ -34,6 +38,24 @@ async function loadPlayer(steamid: string): Promise<{ resolvedId: string; data: 
     if (e instanceof PlayerNotFoundError) return null;
     throw e;
   }
+}
+
+async function loadFaceitExtras(faceitPlayerId: string): Promise<{ stats: FaceitLifetimeStats | null; matches: FaceitMatchSummary[] }> {
+  const statsKey = `cs2stats:faceit:stats:${faceitPlayerId}`;
+  const historyKey = `cs2stats:faceit:history:${faceitPlayerId}`;
+
+  const [cachedStats, cachedMatches] = await Promise.all([
+    getCached<FaceitLifetimeStats>(statsKey, FACEIT_CACHE_TTL_SECONDS),
+    getCached<FaceitMatchSummary[]>(historyKey, FACEIT_CACHE_TTL_SECONDS),
+  ]);
+
+  const stats = cachedStats ?? (await fetchFaceitStats(faceitPlayerId));
+  if (!cachedStats && stats) await setCached(statsKey, stats, FACEIT_CACHE_TTL_SECONDS);
+
+  const matches = cachedMatches ?? (await fetchFaceitMatchHistory(faceitPlayerId, 8));
+  if (!cachedMatches && matches.length) await setCached(historyKey, matches, FACEIT_CACHE_TTL_SECONDS);
+
+  return { stats, matches };
 }
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
@@ -70,5 +92,7 @@ export default async function PlayerPage({ params }: { params: Params }) {
   const snapshots = allSnapshots.slice(-FREE_TIER_SNAPSHOT_DAYS);
   const hasMoreHistory = allSnapshots.length > FREE_TIER_SNAPSHOT_DAYS;
 
-  return <PlayerView data={data} snapshots={snapshots} hasMoreHistory={hasMoreHistory} />;
+  const faceitExtras = data.faceit?.playerId ? await loadFaceitExtras(data.faceit.playerId) : { stats: null, matches: [] };
+
+  return <PlayerView data={data} snapshots={snapshots} hasMoreHistory={hasMoreHistory} faceitStats={faceitExtras.stats} faceitMatches={faceitExtras.matches} />;
 }

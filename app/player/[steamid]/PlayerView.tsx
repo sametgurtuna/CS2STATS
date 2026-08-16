@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Target, Crosshair, Zap, TrendingUp, AlertTriangle, ArrowLeft, Swords, Lock } from "lucide-react";
+import { Target, Crosshair, Zap, TrendingUp, AlertTriangle, ArrowLeft, Swords, Lock, Gamepad2, Trophy, Flame } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from "recharts";
 import type { PlayerData, WeaponStat, MapStat } from "@/lib/types";
 import type { SnapshotPoint } from "@/lib/snapshots";
+import type { FaceitLifetimeStats, FaceitMapStat, FaceitMatchSummary } from "@/lib/faceit";
 import { useI18n } from "@/lib/i18n/context";
 import { SupportButton } from "@/app/components/SupportButton";
 import { ProBadge } from "@/app/components/ProBadge";
@@ -54,7 +55,19 @@ function StatBox({ icon, value, label }: { icon: React.ReactNode; value: string 
   );
 }
 
-export default function PlayerView({ data, snapshots, hasMoreHistory }: { data: PlayerData; snapshots: SnapshotPoint[]; hasMoreHistory?: boolean }) {
+export default function PlayerView({
+  data,
+  snapshots,
+  hasMoreHistory,
+  faceitStats,
+  faceitMatches,
+}: {
+  data: PlayerData;
+  snapshots: SnapshotPoint[];
+  hasMoreHistory?: boolean;
+  faceitStats?: FaceitLifetimeStats | null;
+  faceitMatches?: FaceitMatchSummary[];
+}) {
   const { t } = useI18n();
   const { player, stats, badges, faceit, hours, skins } = data;
   const states = ["Offline", "Online", "Busy", "Away", "Snooze", "Trade", "Play"];
@@ -129,6 +142,88 @@ export default function PlayerView({ data, snapshots, hasMoreHistory }: { data: 
             )}
           </div>
         </div>
+
+        {faceit && ((faceitStats && faceitStats.matches > 0) || (faceitMatches && faceitMatches.length > 0)) && (
+          <div className="card p-8 fade-in">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-8 h-8 rounded-lg bg-[#FF5500]/10 flex items-center justify-center shadow-inner">
+                <Gamepad2 className="w-4 h-4 text-[#FF5500]" />
+              </div>
+              <h3 className="text-sm font-black text-t1 uppercase tracking-widest">{t("section.faceitPerformance")}</h3>
+            </div>
+
+            {faceitStats && faceitStats.matches > 0 && (
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+                <div className="bg-black/30 rounded-xl p-4 text-center border border-white/5">
+                  <div className="text-xl font-black text-t1">{faceitStats.matches}</div>
+                  <div className="text-[9px] text-t3 uppercase font-bold tracking-widest mt-1">{t("faceit.matches")}</div>
+                </div>
+                <div className="bg-black/30 rounded-xl p-4 text-center border border-white/5">
+                  <div className="text-xl font-black text-[#FF5500]">{faceitStats.winRatePct}%</div>
+                  <div className="text-[9px] text-t3 uppercase font-bold tracking-widest mt-1">{t("faceit.winRate")}</div>
+                </div>
+                <div className="bg-black/30 rounded-xl p-4 text-center border border-white/5">
+                  <div className="text-xl font-black text-t1">{faceitStats.avgKD}</div>
+                  <div className="text-[9px] text-t3 uppercase font-bold tracking-widest mt-1">{t("faceit.avgKd")}</div>
+                </div>
+                <div className="bg-black/30 rounded-xl p-4 text-center border border-white/5">
+                  <div className="text-xl font-black text-t1 flex items-center justify-center gap-1">
+                    <Flame className="w-4 h-4 text-orange-400" /> {faceitStats.currentWinStreak}
+                  </div>
+                  <div className="text-[9px] text-t3 uppercase font-bold tracking-widest mt-1">{t("faceit.currentStreak")}</div>
+                </div>
+                <div className="bg-black/30 rounded-xl p-4 text-center border border-white/5">
+                  <div className="text-xl font-black text-t1 flex items-center justify-center gap-1">
+                    <Trophy className="w-4 h-4 text-amber-400" /> {faceitStats.longestWinStreak}
+                  </div>
+                  <div className="text-[9px] text-t3 uppercase font-bold tracking-widest mt-1">{t("faceit.longestStreak")}</div>
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {faceitStats && faceitStats.maps.length > 0 && (
+                <div>
+                  <h4 className="text-xs font-black text-t2 uppercase tracking-widest mb-4">{t("faceit.mapStats")}</h4>
+                  <div className="space-y-4">
+                    {faceitStats.maps.slice(0, 5).map((m: FaceitMapStat) => (
+                      <div key={m.map}>
+                        <div className="flex justify-between text-[11px] font-black tracking-widest uppercase mb-2">
+                          <span className="text-t1">{m.map}</span>
+                          <span className="font-mono text-[#FF5500]">{m.winRatePct}%</span>
+                        </div>
+                        <div className="h-2 bg-black/30 rounded-full overflow-hidden">
+                          <div className="h-full rounded-full grow-bar bg-[#FF5500]" style={{ width: `${m.winRatePct}%` }}></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {faceitMatches && faceitMatches.length > 0 && (
+                <div>
+                  <h4 className="text-xs font-black text-t2 uppercase tracking-widest mb-4">{t("faceit.recentMatches")}</h4>
+                  <div className="space-y-2">
+                    {faceitMatches.slice(0, 6).map((m: FaceitMatchSummary) => (
+                      <a
+                        key={m.matchId}
+                        href={m.faceitUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center justify-between text-xs bg-black/20 hover:bg-white/5 px-4 py-2.5 rounded-xl border border-white/5 transition-colors"
+                      >
+                        <span className={`font-black tracking-widest text-[10px] ${m.won ? "text-green" : "text-red"}`}>{m.won ? t("faceit.win") : t("faceit.loss")}</span>
+                        <span className="text-t2 font-mono truncate mx-3 flex-1 text-center">{m.score}</span>
+                        <span className="text-t3 font-mono text-[10px] shrink-0">{new Date(m.finishedAt * 1000).toLocaleDateString()}</span>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {!stats && (
           <div className="card p-12 text-center flex flex-col items-center justify-center fade-in border-orange-500/30 bg-orange-500/5">

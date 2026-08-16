@@ -71,6 +71,10 @@ export interface FaceitInfo {
   level: number;
   elo: number | null;
   url?: string;
+  /** FACEIT's own player GUID (distinct from SteamID64) — needed for the
+   * stats/history endpoints in lib/faceit.ts. Undefined if FACEIT didn't
+   * return one (shouldn't normally happen once `faceit` itself is non-null). */
+  playerId?: string;
 }
 
 export interface PlayerData {
