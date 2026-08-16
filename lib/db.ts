@@ -16,7 +16,7 @@ export function getDb() {
     if (!isDbConfigured()) {
       throw new Error("SUPABASE_DB_URL not configured.");
     }
-    const client = postgres(process.env.SUPABASE_DB_URL!, { prepare: false });
+    const client = postgres(process.env.SUPABASE_DB_URL!, { prepare: false, connect_timeout: 10 });
     dbInstance = drizzle(client, { schema });
   }
   return dbInstance;

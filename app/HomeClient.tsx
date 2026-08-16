@@ -3,7 +3,8 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
-import { Search, Loader2, AlertTriangle, Link as LinkIcon, Crosshair, Zap, Target, Swords, TrendingUp, Crown, Sparkles } from "lucide-react";
+import NextLink from "next/link";
+import { Search, Loader2, AlertTriangle, Link as LinkIcon, Crosshair, Zap, Target, Swords, TrendingUp, Crown, Sparkles, UserCircle2 } from "lucide-react";
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts";
 import type { PlayerData, SteamPlayerSummary, Badge, FaceitInfo, WeaponStat, MapStat, Skin } from "@/lib/types";
 import { isValidPlayerInput } from "@/lib/validation";
@@ -77,8 +78,14 @@ function PlayerInfo({ p, hours, color, tag, badges, faceit }: { p: SteamPlayerSu
               </a>
             )}
           </div>
-          <div className="text-[10px] font-mono font-bold bg-white/5 px-2 py-1 rounded shadow-inner text-t2 border border-white/5">
-            {hours.toLocaleString()}h <span className="opacity-50">Played</span>
+          <div className="flex items-center gap-2">
+            <NextLink href={`/player/${p.steamId}`} title="View full profile"
+              className="w-7 h-7 rounded-md flex items-center justify-center bg-white/5 hover:bg-white/10 border border-white/5 text-t2 hover:text-t1 transition-colors">
+              <UserCircle2 className="w-4 h-4" />
+            </NextLink>
+            <div className="text-[10px] font-mono font-bold bg-white/5 px-2 py-1 rounded shadow-inner text-t2 border border-white/5">
+              {hours.toLocaleString()}h <span className="opacity-50">Played</span>
+            </div>
           </div>
         </div>
         <div className="text-3xl font-black text-t1 truncate tracking-tighter drop-shadow-md mb-1">{p.name}</div>
