@@ -8,10 +8,12 @@
     "start": "next start",
     "lint": "eslint",
     "health-check": "tsx --env-file=.env.local scripts/health-check.ts",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate"
+    "db:generate": "node --env-file=.env.local node_modules/drizzle-kit/bin.cjs generate",
+    "db:migrate": "node --env-file=.env.local node_modules/drizzle-kit/bin.cjs migrate",
+    "test": "vitest run"
   },
   "dependencies": {
+    "@sentry/nextjs": "^10.70.0",
     "@supabase/supabase-js": "^2.112.3",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.2",
@@ -35,6 +37,7 @@
     "eslint-config-next": "16.2.3",
     "tailwindcss": "^4",
     "tsx": "^4.23.12",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.10"
   }
 }
