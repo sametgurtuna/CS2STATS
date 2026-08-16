@@ -1,9 +1,11 @@
 "use client";
 
-import { TrendingUp, Crosshair, Target } from "lucide-react";
+import { useState } from "react";
+import { TrendingUp, Crosshair, Target, Swords } from "lucide-react";
 import type { PlayerData, WeaponStat } from "@/lib/types";
 import { colorFor } from "@/lib/colors";
 import { useI18n } from "@/lib/i18n/context";
+import { DuelSimulator } from "./DuelSimulator";
 import { PlayerCard } from "./PlayerCard";
 import { Ring } from "./Ring";
 import { StatBox } from "./StatBox";
@@ -18,9 +20,23 @@ import { SkinsSection } from "./SkinsSection";
 export function Dashboard({ players, onRemovePlayer }: { players: PlayerData[]; onRemovePlayer?: (index: number) => void }) {
   const { t } = useI18n();
   const colors = players.map((_, i) => colorFor(i));
+  const [duelOpen, setDuelOpen] = useState(false);
 
   return (
     <div className="space-y-6 pb-12">
+      {/* The simulator is a strict 1v1 — with 3+ players it would need a
+          pair picker, so it's only offered for the two-player case. */}
+      {players.length === 2 && (
+        <div className="flex justify-center fade-in">
+          <button
+            onClick={() => setDuelOpen(true)}
+            className="flex items-center gap-2.5 px-6 py-3 bg-gradient-to-r from-player1/15 to-player2/15 hover:from-player1/25 hover:to-player2/25 border border-white/10 hover:border-white/25 rounded-2xl text-xs font-black tracking-widest text-t1 transition-all active:scale-95 shadow-lg"
+          >
+            <Swords className="w-4 h-4" /> {t("duel.open")}
+          </button>
+        </div>
+      )}
+      {duelOpen && <DuelSimulator players={players} onClose={() => setDuelOpen(false)} />}
       <div className={`grid grid-cols-1 ${players.length > 1 ? "md:grid-cols-2" : ""} gap-6 fade-in`} style={{ animationDelay: "50ms" }}>
         {players.map((p, i) => (
           <PlayerCard key={p.player.steamId + i} data={p} color={colors[i]} index={i} onRemove={onRemovePlayer ? () => onRemovePlayer(i) : undefined} canRemove={players.length > 2} />
